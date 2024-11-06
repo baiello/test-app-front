@@ -1,3 +1,5 @@
+import { formatDate } from '../app/format.js'
+
 import VerticalLayout from './VerticalLayout.js'
 import ErrorPage from "./ErrorPage.js"
 import LoadingPage from "./LoadingPage.js"
@@ -19,12 +21,50 @@ const row = (bill) => {
     `)
   }
 
+
+export const convertDate = dateString => {
+  const monthsMap = {
+    'Jan.': '01',
+    'Fév.': '02',
+    'Mar.': '03',
+    'Avr.': '04',
+    'Mai.': '05',
+    'Juin.': '06',
+    'Jui.': '07',
+    'Aoû.': '08',
+    'Sep.': '09',
+    'Oct.': '10',
+    'Nov.': '11',
+    'Déc.': '12',
+  }
+
+  let dateArray = dateString.split(' ');
+
+  if (dateArray.length === 3) {
+    dateString = `${dateArray[2]}-${monthsMap[dateArray[1]]}-${dateArray[0]}`
+  }
+
+  return new Date(dateString);
+}
+
+export const sortBillsFromEarliestToLatest = (bills) => {
+  bills && bills.length
+    ? bills.sort((a,b) => ((convertDate(a.date) < convertDate(b.date)) ? 1 : -1))
+    : bills;
+  return bills;
+}
+
 const rows = (data) => {
-  return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
+  return (data && data.length) ? data.map(bill => row(bill)).join("") : "";
 }
 
 export default ({ data: bills, loading, error }) => {
-  
+  // if (bills !== undefined) {
+  //   bills = bills.sort((a,b) => new Date(b.date) - new Date(a.date))
+  // }
+
+  bills = sortBillsFromEarliestToLatest(bills);
+
   const modal = () => (`
     <div class="modal fade" id="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -47,7 +87,7 @@ export default ({ data: bills, loading, error }) => {
   } else if (error) {
     return ErrorPage(error)
   }
-  
+
   return (`
     <div class='layout'>
       ${VerticalLayout(120)}
